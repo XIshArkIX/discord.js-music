@@ -2,87 +2,82 @@
 
 ![alt text](https://nodei.co/npm/discord.js-music-v11.png?downloads=true&stars=true "discord.js-music-v11 stats")
 
-This version is not yet stable, although has been mildly tested, it has not been that extensive.   
-It's an update of the original by [ruiqimao](https://github.com/ruiqimao/discord.js-music) for [Discord.js](https://discord.js.org/)'s version v11.x, and adds a few extra sprinkles. It still requires tweaks and testing but yeah it's something.
+__Описание:__
+Эта версия не стабильная, мы (изначальные разработчики) всё тестили, но не углублялись. Всё рабочее работает, но мы не уверены в этом.  
+Это форк [nexu-dev](https://github.com/nexu-dev/discord.js-music) форка [ruiqimao](https://github.com/ruiqimao/discord.js-music) для [Discord.js](https://discord.js.org/) версии v11.x. Также добавляет несколько своих фишек. До сих пор нуждается в тестировании и фиксах, но да, это ЧТО-ТО!
 
-__The commands available are:__  
-* `play (<url>|<search string>)`: Play a video/music. It can take a URL from various services (YouTube, Vimeo, YouKu, etc). You can also search using a string.
-* `skip [number]`: Skip some number of songs. Will skip 1 song if a number is not specified.
-* `queue`: Display the current queue.
-* `pause`: Pause music playback. (requires music manager)
-* `resume`: Resume music playback. (requires music manager)
-* `volume`: Adjust the playback volume between 1 and 200 (requires music manager)
-* `leave`: Clears the song queue and leaves the channel.
-* `clearqueue`: Clears the song queue.
+__Действующие команды:__  
+* `play (<url>|<search string>)`: Воспроизводит видео/музыку. Можно взять ссылку с YouTube, Vimeo, YouKu и других (SoundCloud не поддерживается). Вы также можете искать песни с помощью поиска.
+* `skip [number]`: Пропускает некоторое кол-во песен. По умолчанию пропускает 1 песню.
+* `queue`: Показывает воспроизводимую песню.
+* `pause`: Ставит воспроизведение на паузу. (нужен music manager)
+* `resume`: Продолжает воспроизведение. (нужен music manager)
+* `volume`: Регулирует громкость между 1 и 200 (нужен music manager)
+* `leave`: Очищает список заказанных песен и выходит из голосового канала.
+* `clearqueue`: Очищает список заказанных песен.
 
-__Permissions:__  
-* If `anyoneCanSkip` is false then only admins and the user that requested the song can skip it.
-* Only admins can change volume or resume/pause music.
+__Разрешения/права:__  
+* Если переменная `anyoneCanSkip` установлена в false, тогда только админы и заказавший песню человек может пропустить её.
+* Только админы могут изменять громкость и ставить паузу/возобновлять воспроизведение.
 
-__Things added:__  
-* Search is working again.
-* Added the command 'volume'
-* Added the command 'leave'
-* Added the command 'clearqueue'
+__Добавлено:__  
+* Поиск снова работает.
+* Добавлена команда 'volume'
+* Добавлена команда 'leave'
+* Добавлена команда 'clearqueue'
+* Видно, кто заказал песню
 
-__Things changed:__  
+__Изменилось:__  
 * Permissions
 
-__Pre-installation:__  
-1. `npm install discord.js` // The core discord.js framework.  
-2. `npm install ffmpeg-binaries` // Gives your ability the bot to hear (required to join vc)  
-3. `npm install node-opus` or `npm install opusscript` // Required to stream audio, node-opus recommended
+__Перед установкой:__  
+1. `npm install discord.js` // Основная библиотека Discord.  
+2. `npm install ffmpeg-binaries` // Даёт возможность "петь" боту (нужно войти в голосовой канал)  
+3. `npm install node-opus` or `npm install opusscript` // Нужен для возпроизведения музыки, node-opus рекомендуется
 
-__Installation:__  
+__Установка:__  
 1. `npm install discord.js-music-v11`
 
-__Common installation issues:__  
-__Issue:__ FFMPEG was not found on your system, so audio cannot be played. Please make sure FFMPEG is installed and in your PATH.  
-__Fix:__ `npm install ffmpeg-binaries`  
-__Issue:__ Couldn't find an Opus engine.  
-__Fix:__ `npm install node-opus` or `npm install opusscript`  
-__Issue:__ Any node-gyp errors. (build fail, missing cl.exe, etc.)  
-__Fix:__ This one is a little more complicated.  
-1. Download and install [Visual Studio 2015](https://www.visualstudio.com/downloads/)  
-2. New project -> Visual C++  
-3. Install Visual C++  
+__Популярные проблемы:__  
+__Проблема:__ FFMPEG не найден в системе, так что аудио не может воспроизводиться. Убедитесь в том, что FFMPEG установлен и, если это так, проверьте ваш путь к нему.  
+__Решение:__ `npm install ffmpeg-binaries`  
+__Проблема:__ Не могу найти движок OPUS.  
+__Решение:__ `npm install node-opus` or `npm install opusscript`  
+__Проблема:__ Любые ошибки node-gyp. (проблема с установкой, нет cl.exe и др.)  
+__Решение:__ Решение состоит из нескольких этапов.  
+1. Скачать и установить [Visual Studio 2015](https://www.visualstudio.com/downloads/)  
+2. Новый проект -> Visual C++  
+3. Установить Visual C++  
 
-If that doesn't fix your issue;  
-1. Download and install the [Windows 8.1 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-8-1-sdk)
+Если не помогло;  
+1. Скачать и установить это => [Windows 8.1 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-8-1-sdk)
 
-This is a music plugin for Discord.js. Using it is as easy as:  
+Это простой плагин для воспроизведения музыки. В использовании прост как корка лимона.:  
 ```javascript
 const Discord = require('discord.js');
 const music = require('discord.js-music-v11');
-const Bot = new Discord.Client();
+const client = new Discord.Client();
 const token = "<auth_token>" // Recommended to load from json file.
 
-Bot.on('ready', () => {
+client.on('ready', () => {
     console.log(`[Start] ${new Date()}`);
 });
 
-music(Bot, {
-	prefix: '-',        // Prefix of '-'.
-	global: false,      // Server-specific queues.
-	maxQueueSize: 10,   // Maximum queue size of 10.
-	clearInvoker: true, // If permissions applicable, allow the bot to delete the messages that invoke it (start with prefix)
-    channel: 'music'    // Name of voice channel to join. If omitted, will instead join user's voice channel.
-});
-Bot.login(token);
+music(Bot);
+client.login(token);
 ```
 
-The module consists of a single function, which takes two arguments:  
+Модуль состоит из одной функции, которая принимает два аргумента:  
 ```javascript
 /*
- * @param {Client} client - The discord.js client.
- * @param {object} options - (Optional) Options to configure the music bot. Acceptable options are:
- * 		prefix: The prefix to use for the commands (default '!').
- * 		global: Whether to use a global queue instead of a server-specific queue (default false).
- * 		maxQueueSize: The maximum queue size (default 20).
- * 		anyoneCanSkip: Allow anybody to skip the song.
- * 		clearInvoker: Clear the command message.
- * 		volume: The default volume of the player.
- *      channel: Name of voice channel to join. If omitted, will instead join user's voice channel.
+ * @param {Client} client - discord.js клиент.
+ * @param {object} options - (Опциональный) Опции для конфигурирования бота. Принимаемые опции:
+ * 		prefix: Префикс для всех команд (по умолчанию: '!').
+ * 		global: Использовать глобальную очередь для всех серверов или для каждого свою (по умолчанию: false).
+ * 		maxQueueSize: Квота на список проигрываемых файлов (по умолчанию: 20).
+ * 		anyoneCanSkip: Любой может пропустить песню.
+ * 		clearInvoker: Очищать ли команды.
+ * 		volume: Громкость по умолчанию при входе на сервер.
  */
 music(client, options);
 ```
