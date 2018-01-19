@@ -13,7 +13,6 @@ const ytdl = require('ytdl-core');
  * 							anyoneCanSkip: Allow anybody to skip the song.
  * 							clearInvoker: Clear the command message.
  * 							volume: The default volume of the player.
- *							channel: Name of default voice channel to join.
  */
 module.exports = function (client, options) {
 	// Get all options.
@@ -23,7 +22,6 @@ module.exports = function (client, options) {
 	let DEFAULT_VOLUME = (options && options.volume) || 50;
 	let ALLOW_ALL_SKIP = (options && options.anyoneCanSkip) || false;
 	let CLEAR_INVOKER = (options && options.clearInvoker) || false;
-	let CHANNEL = (options && options.channel) || false;
 
 	// Create an object of queues.
 	let queues = {};
@@ -111,21 +109,21 @@ module.exports = function (client, options) {
 	 */
 	function play(msg, suffix) {
 		// Make sure the user is in a voice channel.
-		if (!CHANNEL && msg.member.voiceChannel === undefined) return msg.channel.send(wrap('You\'re not in a voice channel.'));
+		if (msg.member.voiceChannel === undefined) return msg.channel.sendMessage(wrap('И с кому это? Заходи давай!'));
 
 		// Make sure the suffix exists.
-		if (!suffix) return msg.channel.send(wrap('No video specified!'));
+		if (!suffix) return msg.channel.sendMessage(wrap('Видео забыл!'));
 
 		// Get the queue.
 		const queue = getQueue(msg.guild.id);
 
 		// Check if the queue has reached its maximum size.
 		if (queue.length >= MAX_QUEUE_SIZE) {
-			return msg.channel.send(wrap('Maximum queue size reached!'));
+			return msg.channel.sendMessage(wrap('Я больше не могу!'));
 		}
 
 		// Get the video information.
-		msg.channel.send(wrap('Searching...')).then(response => {
+		msg.channel.sendMessage(wrap('Гуглю...')).then(response => {
 			var searchstring = suffix
 			if (!suffix.toLowerCase().startsWith('http')) {
 				searchstring = 'gvsearch1:' + suffix;
@@ -134,13 +132,13 @@ module.exports = function (client, options) {
 			YoutubeDL.getInfo(searchstring, ['-q', '--no-warnings', '--force-ipv4'], (err, info) => {
 				// Verify the info.
 				if (err || info.format_id === undefined || info.format_id.startsWith('0')) {
-					return response.edit(wrap('Invalid video!'));
+					return response.edit(wrap('Позаботься о том, чтобы это было видео!'));
 				}
 
 				info.requester = msg.author.id;
 
 				// Queue the video.
-				response.edit(wrap('Queued: ' + info.title)).then(() => {
+				response.edit(wrap('Заказано ' + msg.author.username + ': ' + info.title)).then(() => {
 					queue.push(info);
 					// Play if only one element in the queue.
 					if (queue.length === 1) executeQueue(msg, queue);
@@ -160,12 +158,12 @@ module.exports = function (client, options) {
 	function skip(msg, suffix) {
 		// Get the voice connection.
 		const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
-		if (voiceConnection === null) return msg.channel.send(wrap('No music being played.'));
+		if (voiceConnection === null) return msg.channel.sendMessage(wrap('Не могу говорить.'));
 
 		// Get the queue.
 		const queue = getQueue(msg.guild.id);
 
-		if (!canSkip(msg.member, queue)) return msg.channel.send(wrap('You cannot skip this as you didn\'t queue it.')).then((response) => {
+		if (!canSkip(msg.member, queue)) return msg.channel.sendMessage(wrap('Сначала закажи, потом пропускай.\nНу что за люди пошли!')).then((response) => {
 			response.delete(5000);
 		});
 
@@ -184,7 +182,7 @@ module.exports = function (client, options) {
 		if (voiceConnection.paused) dispatcher.resume();
 		dispatcher.end();
 
-		msg.channel.send(wrap('Skipped ' + toSkip + '!'));
+		msg.channel.sendMessage(wrap('Пропущено ' + toSkip + ' песен!'));
 	}
 
 	/**
@@ -203,15 +201,15 @@ module.exports = function (client, options) {
 		)).join('\n');
 
 		// Get the status of the queue.
-		let queueStatus = 'Stopped';
+		let queueStatus = 'Остановлено';
 		const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
 		if (voiceConnection !== null) {
 			const dispatcher = voiceConnection.player.dispatcher;
-			queueStatus = dispatcher.paused ? 'Paused' : 'Playing';
+			queueStatus = dispatcher.paused ? 'На паузе' : 'Воспроизводится';
 		}
 
 		// Send the queue and status.
-		msg.channel.send(wrap('Queue (' + queueStatus + '):\n' + text));
+		msg.channel.sendMessage(wrap('В очереди (' + queueStatus + '):\n' + text));
 	}
 
 	/**
@@ -224,13 +222,13 @@ module.exports = function (client, options) {
 	function pause(msg, suffix) {
 		// Get the voice connection.
 		const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
-		if (voiceConnection === null) return msg.channel.send(wrap('No music being played.'));
+		if (voiceConnection === null) return msg.channel.sendMessage(wrap('Не могу говорить.'));
 
 		if (!isAdmin(msg.member))
-			return msg.channel.send(wrap('You are not authorized to use this.'));
+			return msg.channel.sendMessage(wrap('Зови админа.'));
 
 		// Pause.
-		msg.channel.send(wrap('Playback paused.'));
+		msg.channel.sendMessage(wrap('Воспроизведение на паузе.'));
 		const dispatcher = voiceConnection.player.dispatcher;
 		if (!dispatcher.paused) dispatcher.pause();
 	}
@@ -245,7 +243,7 @@ module.exports = function (client, options) {
 	function leave(msg, suffix) {
 		if (isAdmin(msg.member)) {
 			const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
-			if (voiceConnection === null) return msg.channel.send(wrap('I\'m not in any channel!.'));
+			if (voiceConnection === null) return msg.channel.sendMessage(wrap('Помести меня в нужный канал!.'));
 			// Clear the queue.
 			const queue = getQueue(msg.guild.id);
 			queue.splice(0, queue.length);
@@ -254,7 +252,7 @@ module.exports = function (client, options) {
 			voiceConnection.player.dispatcher.end();
 			voiceConnection.disconnect();
 		} else {
-			msg.channel.send(wrap('You don\'t have permission to use that command!'));
+			msg.channel.sendMessage(wrap('Админ? Нет? Тогда сам придумай, как тебе сказать, что ты не можешь это использовать.'));
 		}
 	}
 
@@ -269,9 +267,9 @@ module.exports = function (client, options) {
 			const queue = getQueue(msg.guild.id);
 
 			queue.splice(0, queue.length);
-			msg.channel.send(wrap('Queue cleared!'));
+			msg.channel.sendMessage(wrap('Заказанные песни стёрты из памяти!'));
 		} else {
-			msg.channel.send(wrap('You don\'t have permission to use that command!'));
+			msg.channel.sendMessage(wrap('Админ? Нет? Тогда сам придумай, как тебе сказать, что ты не можешь это использовать.'));
 		}
 	}
 
@@ -285,13 +283,13 @@ module.exports = function (client, options) {
 	function resume(msg, suffix) {
 		// Get the voice connection.
 		const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
-		if (voiceConnection === null) return msg.channel.send(wrap('No music being played.'));
+		if (voiceConnection === null) return msg.channel.sendMessage(wrap('Не могу говорить.'));
 
 		if (!isAdmin(msg.member))
-			return msg.channel.send(wrap('You are not authorized to use this.'));
+			return msg.channel.sendMessage(wrap('Админ? Нет? Тогда сам придумай, как тебе сказать, что ты не можешь это использовать.'));
 
 		// Resume.
-		msg.channel.send(wrap('Playback resumed.'));
+		msg.channel.sendMessage(wrap('Воспроизведение поехало в новое село.'));
 		const dispatcher = voiceConnection.player.dispatcher;
 		if (dispatcher.paused) dispatcher.resume();
 	}
@@ -306,19 +304,19 @@ module.exports = function (client, options) {
 	function volume(msg, suffix) {
 		// Get the voice connection.
 		const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
-		if (voiceConnection === null) return msg.channel.send(wrap('No music being played.'));
+		if (voiceConnection === null) return msg.channel.sendMessage(wrap('Не могу говорить.'));
 
 		if (!isAdmin(msg.member))
-			return msg.channel.send(wrap('You are not authorized to use this.'));
+			return msg.channel.sendMessage(wrap('You are not authorized to use this.'));
 
 		// Get the dispatcher
 		const dispatcher = voiceConnection.player.dispatcher;
 
-		if (suffix > 200 || suffix < 0) return msg.channel.send(wrap('Volume out of range!')).then((response) => {
+		if (suffix > 200 || suffix < 0) return msg.channel.sendMessage(wrap('Ты хочешь оглохнуть?!\nИЛИ\nУ тебя суперслух, чтобы услышать это?')).then((response) => {
 			response.delete(5000);
 		});
 
-		msg.channel.send(wrap("Volume set to " + suffix));
+		msg.channel.sendMessage(wrap("Громкость поставлена на " + suffix));
 		dispatcher.setVolume((suffix/100));
 	}
 
@@ -332,7 +330,7 @@ module.exports = function (client, options) {
 	function executeQueue(msg, queue) {
 		// If the queue is empty, finish.
 		if (queue.length === 0) {
-			msg.channel.send(wrap('Playback finished.'));
+			msg.channel.sendMessage(wrap('Я закончил петь.'));
 
 			// Leave the voice channel.
 			const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
@@ -343,15 +341,8 @@ module.exports = function (client, options) {
 			// Join the voice channel if not already in one.
 			const voiceConnection = client.voiceConnections.find(val => val.channel.guild.id == msg.guild.id);
 			if (voiceConnection === null) {
-				if (CHANNEL) {
-					msg.guild.channels.find('name', CHANNEL).join().then(connection => {
-						resolve(connection);
-					}).catch((error) => {
-						console.log(error);
-					});
-
 				// Check if the user is in a voice channel.
-				} else if (msg.member.voiceChannel) {
+				if (msg.member.voiceChannel) {
 					msg.member.voiceChannel.join().then(connection => {
 						resolve(connection);
 					}).catch((error) => {
@@ -372,7 +363,7 @@ module.exports = function (client, options) {
 			console.log(video.webpage_url);
 
 			// Play the video.
-			msg.channel.send(wrap('Now Playing: ' + video.title)).then(() => {
+			msg.channel.sendMessage(wrap('Сейчас воспроизводиться: ' + video.title + '\nЗаказанная: ' + msg.author.username)).then(() => {
 				let dispatcher = connection.playStream(ytdl(video.webpage_url, {filter: 'audioonly'}), {seek: 0, volume: (DEFAULT_VOLUME/100)});
 
 				connection.on('error', (error) => {
