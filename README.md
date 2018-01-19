@@ -63,7 +63,7 @@ client.on('ready', () => {
     console.log(`[Start] ${new Date()}`);
 });
 
-music(Bot);
+music(client);
 client.login(token);
 ```
 
